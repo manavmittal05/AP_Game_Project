@@ -263,14 +263,14 @@ public class Hill implements Screen {
             if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
                 cannon1_position_x = tank1_position_x;
                 if (tank1_angle_of_fire >= 0.1) {
-                    tank1_angle_of_fire -= 0.1;
+                    tank1_angle_of_fire -= 0.02;
                     System.out.println(tank1_angle_of_fire);
                 }
             }
             if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
                 cannon1_position_x = tank1_position_x;
                 if (tank1_angle_of_fire <= 1.5) {
-                    tank1_angle_of_fire += 0.1;
+                    tank1_angle_of_fire += 0.02;
                     System.out.println(tank1_angle_of_fire);
                 }
             }
