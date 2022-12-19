@@ -17,12 +17,13 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import org.graalvm.compiler.nodes.java.ExceptionObjectNode;
+
+import java.util.*;
 
 import java.io.FileOutputStream;
 
-
 public class Hill implements Screen {
-
     private MyGdxGame object;
     private SpriteBatch batch;
     private Texture img, bg;
@@ -40,12 +41,26 @@ public class Hill implements Screen {
     private int [] terrain_y_coordinate_mapping = new int[1500];
     private TextureRegionDrawable tank2_drawable;
     private ImageButton tank2_image_button;
+    private int airdrop_flag=1;
+    private int timeForAirdrop= 0 ;
+    private Texture airdropImage;
+    private Texture airDropSpawnedImage;
+    private int airDropSpawnedImageFlag=1 , airDropSpawnedImageTime=1;
+    private int trajectoryArray[] = new int[1500];
+    private Texture Cannon1;
+    private Drawable Cannon1_drawable;
+    private ImageButton Cannon1_ImageButton;
+    int cannon1_position_x;
+    int cannon1_width , cannon1_height;
+
 
 
     Hill(MyGdxGame x) {
         this.object = x;
         stage = new Stage(new ScreenViewport());
         bg = new Texture(Gdx.files.internal("terrain.png"));
+        airdropImage = new Texture(Gdx.files.internal("airdrop.png"));
+        airDropSpawnedImage = new Texture(Gdx.files.internal("airDropSpawnedImage.png"));
         img = new Texture(Gdx.files.internal(TankSelection.tank_chosen_file_name));
         drawable = new TextureRegionDrawable(new TextureRegion(img));
         set_values_of_terrain_y_coordinate_mapping();
@@ -53,6 +68,12 @@ public class Hill implements Screen {
         tank1_drawable =  new TextureRegionDrawable(new TextureRegion(tank1));
         tank1_image_button = new ImageButton(tank1_drawable);
         tank1_image_button.setBounds(tank1_position_x , tank1_position_y, 80 , 90);
+        Cannon1 = new Texture("missile.png");
+        Cannon1_drawable =  new TextureRegionDrawable(new TextureRegion(Cannon1));
+        Cannon1_ImageButton = new ImageButton(Cannon1_drawable);
+        Cannon1_ImageButton.setBounds(tank1_position_x , terrain_y_coordinate_mapping[tank1_position_x], 0 , 0);
+        cannon1_position_x=0;
+        stage.addActor(Cannon1_ImageButton);
         stage.addActor(tank1_image_button);
         Gdx.input.setInputProcessor(stage);
 
@@ -90,10 +111,19 @@ public class Hill implements Screen {
         Gdx.input.setInputProcessor(stage);
 
 
-
-
     }
 
+    private void set_values_of_trajectory_array(String tankFiredFrom , double angle , int velocity){
+        for(int i = 0 ; i<1500 ; i++){
+            trajectoryArray[i] = ((int) ((i * Math.tan(angle)) - ((0.5 * 10 * i * i) / ((velocity * velocity * Math.cos(angle) * Math.cos(angle))))));
+        }
+//        else if(tankFiredFrom.equals("tank2")) {
+//            for (int i = 0; i < 1500; i++) {
+//                trajectoryArray[i] = (int) (((i-tank2_position_x) * Math.tan(angle)) - ((0.5 * 10 * (i - tank2_position_x) * (i - tank2_position_x)) / ((velocity * velocity * Math.cos(angle) * Math.cos(angle)))) + tank2_position_y);
+//            }
+//        }
+
+    }
     private void set_values_of_terrain_y_coordinate_mapping(){
         for(int i = 0 ; i<1500 ; i++){
            terrain_y_coordinate_mapping[i] = (int)Math.sqrt((2112*2112) - ((i-555)*(i-555))) - 2132 ;
@@ -132,6 +162,29 @@ public class Hill implements Screen {
         object.batch.draw(bg, 0, 0);
         tank1_image_button.setBounds(tank1_position_x , tank1_position_y , 60 , 430);
         tank2_image_button.setBounds(tank2_position_x , tank2_position_y , 60 , 430);
+        Cannon1_ImageButton.setBounds(cannon1_position_x + tank1_position_x, trajectoryArray[cannon1_position_x] + tank1_position_y + 156, cannon1_width , cannon1_height);
+        if(timeForAirdrop%400==0 && timeForAirdrop>=1 && airdrop_flag==1){
+            airDropSpawnedImageFlag=0;
+            airdrop_flag=0;
+        }
+        if(airDropSpawnedImageTime>=100){
+            airDropSpawnedImageFlag=1;
+            airDropSpawnedImageTime=0;
+        }
+        if(airdrop_flag==0){
+            object.batch.draw(airdropImage , 570 , 170);//terrain_y_coordinate_mapping[550]);
+        }
+        if(airDropSpawnedImageFlag==0){
+            ScreenUtils.clear(0, 0, 0 , 0);
+            tank1_image_button.setBounds(tank1_position_x , tank1_position_y , 0, 0);
+            tank2_image_button.setBounds(tank2_position_x , tank2_position_y , 0 , 0);
+            object.batch.draw(airDropSpawnedImage, 270, 90);
+            airDropSpawnedImageTime+=2;
+        }
+        if(airdrop_flag==0 && (tank1_position_y==terrain_y_coordinate_mapping[500] || tank2_position_y==terrain_y_coordinate_mapping[500])){
+            airdrop_flag=1;
+        }
+
 
 
         if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
@@ -140,6 +193,7 @@ public class Hill implements Screen {
                 tank1_position_x = 1100;
             }
             tank1_position_y = terrain_y_coordinate_mapping[tank1_position_x];
+            timeForAirdrop+=2;
         }
 
         if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
@@ -148,6 +202,7 @@ public class Hill implements Screen {
                 tank1_position_x = 0;
             }
             tank1_position_y = terrain_y_coordinate_mapping[tank1_position_x];
+            timeForAirdrop+=2;
         }
 
         if(Gdx.input.isKeyPressed(Input.Keys.D)){
@@ -156,6 +211,7 @@ public class Hill implements Screen {
                 tank2_position_x = 1100;
             }
             tank2_position_y = terrain_y_coordinate_mapping[tank2_position_x];
+            timeForAirdrop+=2;
         }
 
         if(Gdx.input.isKeyPressed(Input.Keys.A)){
@@ -164,10 +220,21 @@ public class Hill implements Screen {
                 tank2_position_x = 0;
             }
             tank2_position_y = terrain_y_coordinate_mapping[tank2_position_x];
+            timeForAirdrop+=2;
         }
+        if(Gdx.input.isKeyPressed(Input.Keys.SPACE)){
+            set_values_of_trajectory_array("tank1" , 1.1, 100);
+            cannon1_width = 60;
+            cannon1_height = 90;
+            cannon1_position_x+=5;
+            if(trajectoryArray[cannon1_position_x] + tank1_position_y <= terrain_y_coordinate_mapping[cannon1_position_x+tank1_position_x]){
+                System.out.println("Helllooooooo");
+            }
+        }
+        if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
+            set_values_of_trajectory_array("tank2" , 2, 100);
 
-
-
+        }
 
 
         if (menu_page_show_flag == 1) {
@@ -225,13 +292,10 @@ public class Hill implements Screen {
             }
         });
     }
-
         @Override
         public void dispose() {
             batch.dispose();
             img.dispose();
         }
-
-
     }
 
