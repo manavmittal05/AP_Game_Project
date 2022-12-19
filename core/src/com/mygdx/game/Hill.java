@@ -126,7 +126,7 @@ public class Hill implements Screen {
     }
     private void set_values_of_terrain_y_coordinate_mapping(){
         for(int i = 0 ; i<1500 ; i++){
-           terrain_y_coordinate_mapping[i] = (int)Math.sqrt((2112*2112) - ((i-555)*(i-555))) - 2132 ;
+           terrain_y_coordinate_mapping[i] = (int)Math.sqrt((2112*2112) - ((i-555)*(i-555))) - 2136 ;
         }
     }
 
