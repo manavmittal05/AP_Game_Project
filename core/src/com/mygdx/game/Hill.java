@@ -1,27 +1,28 @@
 package com.mygdx.game;
-import java.io.*;
 
-import com.badlogic.gdx.*;
-//import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Texture;
-//import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.physics.bullet.collision._btMprSimplex_t;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-//import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-//import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import org.graalvm.compiler.nodes.java.ExceptionObjectNode;
-
-import java.util.*;
 
 import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+
+//import com.badlogic.gdx.graphics.GL20;
+//import com.badlogic.gdx.graphics.g2d.Sprite;
+//import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+//import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 
 public class Hill implements Screen {
     private MyGdxGame object;
@@ -50,8 +51,11 @@ public class Hill implements Screen {
     private Texture Cannon1;
     private Drawable Cannon1_drawable;
     private ImageButton Cannon1_ImageButton;
-    int cannon1_position_x;
-    int cannon1_width , cannon1_height;
+    private int cannon1_position_x;
+    private int cannon1_width , cannon1_height;
+    private double tank1_angle_of_fire=0.9 , tank1_velocity_of_fire=100;
+    private int tankTurnFlag=1;
+    private Texture player1turn , player2turn ;
 
 
 
@@ -108,12 +112,15 @@ public class Hill implements Screen {
         In_game_back_to_main_menu_Drawable = new TextureRegionDrawable(new TextureRegion(In_game_back_to_main_menu_Texture));
         In_game_back_to_main_menu_ImageButton = new ImageButton(In_game_back_to_main_menu_Drawable);
         stage.addActor(In_game_back_to_main_menu_ImageButton);
+
+        player1turn = new Texture(Gdx.files.internal("player1turn.png"));
+        player2turn = new Texture(Gdx.files.internal("player2turn.png"));
         Gdx.input.setInputProcessor(stage);
 
 
     }
 
-    private void set_values_of_trajectory_array(String tankFiredFrom , double angle , int velocity){
+    private void set_values_of_trajectory_array(String tankFiredFrom , double angle , double velocity){
         for(int i = 0 ; i<1500 ; i++){
             trajectoryArray[i] = ((int) ((i * Math.tan(angle)) - ((0.5 * 10 * i * i) / ((velocity * velocity * Math.cos(angle) * Math.cos(angle))))));
         }
@@ -178,63 +185,119 @@ public class Hill implements Screen {
             ScreenUtils.clear(0, 0, 0 , 0);
             tank1_image_button.setBounds(tank1_position_x , tank1_position_y , 0, 0);
             tank2_image_button.setBounds(tank2_position_x , tank2_position_y , 0 , 0);
-            object.batch.draw(airDropSpawnedImage, 270, 90);
+            object.batch.draw(airDropSpawnedImage, 270, 60);
             airDropSpawnedImageTime+=2;
         }
         if(airdrop_flag==0 && (tank1_position_y==terrain_y_coordinate_mapping[500] || tank2_position_y==terrain_y_coordinate_mapping[500])){
             airdrop_flag=1;
         }
-
-
-
-        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-            tank1_position_x = tank1_position_x+1;
-            if(tank1_position_x > 1100){
-                tank1_position_x = 1100;
-            }
-            tank1_position_y = terrain_y_coordinate_mapping[tank1_position_x];
-            timeForAirdrop+=2;
+        if(tankTurnFlag==1){
+            object.batch.draw(player1turn , 495 , 420);
+        }
+        if(tankTurnFlag==2){
+            object.batch.draw(player2turn , 495 , 420);
         }
 
-        if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-            tank1_position_x= tank1_position_x-1;
-            if(tank1_position_x < 0){
-                tank1_position_x = 0;
-            }
-            tank1_position_y = terrain_y_coordinate_mapping[tank1_position_x];
-            timeForAirdrop+=2;
-        }
 
-        if(Gdx.input.isKeyPressed(Input.Keys.D)){
-            tank2_position_x = tank2_position_x+1;
-            if(tank2_position_x > 1100){
-                tank2_position_x = 1100;
-            }
-            tank2_position_y = terrain_y_coordinate_mapping[tank2_position_x];
-            timeForAirdrop+=2;
-        }
 
-        if(Gdx.input.isKeyPressed(Input.Keys.A)){
-            tank2_position_x= tank2_position_x-1;
-            if(tank2_position_x < 0){
-                tank2_position_x = 0;
+
+        if(tankTurnFlag==2) {
+            if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+                tank2_position_x = tank2_position_x + 1;
+                if (tank2_position_x > 1100) {
+                    tank2_position_x = 1100;
+                }
+                tank2_position_y = terrain_y_coordinate_mapping[tank2_position_x];
+                timeForAirdrop += 2;
             }
-            tank2_position_y = terrain_y_coordinate_mapping[tank2_position_x];
-            timeForAirdrop+=2;
-        }
-        if(Gdx.input.isKeyPressed(Input.Keys.SPACE)){
-            set_values_of_trajectory_array("tank1" , 1.1, 100);
-            cannon1_width = 60;
-            cannon1_height = 90;
-            cannon1_position_x+=5;
-            if(trajectoryArray[cannon1_position_x] + tank1_position_y <= terrain_y_coordinate_mapping[cannon1_position_x+tank1_position_x]){
-                System.out.println("Helllooooooo");
+
+            if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+                tank2_position_x = tank2_position_x - 1;
+                if (tank2_position_x < 0) {
+                    tank2_position_x = 0;
+                }
+                tank2_position_y = terrain_y_coordinate_mapping[tank2_position_x];
+                timeForAirdrop += 2;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.X)) {
+                tankTurnFlag=1;
             }
         }
-        if(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)){
-            set_values_of_trajectory_array("tank2" , 2, 100);
 
+        if(tankTurnFlag==1) {
+            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+                cannon1_width = 60;
+                cannon1_height = 90;
+                set_values_of_trajectory_array("tank1", tank1_angle_of_fire, tank1_velocity_of_fire);
+                if (tank1_angle_of_fire >= 1.3) {
+                    cannon1_position_x += 2;
+                } else {
+                    cannon1_position_x += 5;
+                }
+                if (trajectoryArray[cannon1_position_x] + tank1_position_y <= terrain_y_coordinate_mapping[cannon1_position_x + tank1_position_x]) {
+                    cannon1_width = 0;
+                    cannon1_height = 0;
+                    int recoil=0;
+                    recoil = tank2_position_x-cannon1_position_x;
+                    if(recoil<0){
+                        recoil=recoil*-1;
+                    }
+                    if(recoil<=40){
+                        recoil = 0 ;
+                    }
+                    else{
+                        if(tank2_position_x-cannon1_position_x < 0){
+                            recoil= -1*(tank2_position_x-cannon1_position_x);
+                        }
+                        else{
+                            recoil =tank2_position_x-cannon1_position_x;
+                        }
+                    }
+                    cannon1_position_x = tank1_position_x;
+                    System.out.println(recoil);
+                    tank2_position_x += recoil;
+                    tank2_position_y = terrain_y_coordinate_mapping[tank2_position_x];
+                    tankTurnFlag=2;
+                }
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+                cannon1_position_x = tank1_position_x;
+                if (tank1_angle_of_fire >= 0.1) {
+                    tank1_angle_of_fire -= 0.1;
+                    System.out.println(tank1_angle_of_fire);
+                }
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+                cannon1_position_x = tank1_position_x;
+                if (tank1_angle_of_fire <= 1.5) {
+                    tank1_angle_of_fire += 0.1;
+                    System.out.println(tank1_angle_of_fire);
+                }
+            }
+
+            if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
+                tank1_position_x = tank1_position_x+1;
+                if(tank1_position_x > 1100){
+                    tank1_position_x = 1100;
+                }
+                tank1_position_y = terrain_y_coordinate_mapping[tank1_position_x];
+                timeForAirdrop+=2;
+            }
+
+            if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
+                tank1_position_x= tank1_position_x-1;
+                if(tank1_position_x < 0){
+                    tank1_position_x = 0;
+                }
+                tank1_position_y = terrain_y_coordinate_mapping[tank1_position_x];
+                timeForAirdrop+=2;
+            }
         }
+
+
+
+
+
 
 
         if (menu_page_show_flag == 1) {

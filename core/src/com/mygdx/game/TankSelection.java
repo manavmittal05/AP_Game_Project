@@ -28,6 +28,7 @@ public class TankSelection implements Screen {
     private int tank_chosen_index;
     static Hill loadGame1 ;
 
+
     TankSelection(MyGdxGame x){
         this.object = x;
         stage_create();
@@ -119,6 +120,7 @@ public class TankSelection implements Screen {
                 tank_chosen_index= (array_of_tank_images_ptr)%3;
             }
         });
+
 
     }
 

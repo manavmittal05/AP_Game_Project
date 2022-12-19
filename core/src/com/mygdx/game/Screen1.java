@@ -27,7 +27,6 @@ public class Screen1 implements Screen {
     private Drawable drawable;
     private ImageButton button1;
 
-
     Screen1(MyGdxGame x){
         this.object = x;
         stage = new Stage(new ScreenViewport());
@@ -81,9 +80,7 @@ public class Screen1 implements Screen {
                 object.setScreen(new Screen2(object));
             }
         });
-
     }
-
     @Override
     public void dispose () {
         batch.dispose();
