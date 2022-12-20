@@ -169,7 +169,7 @@ public class Hill implements Screen {
         object.batch.draw(bg, 0, 0);
         tank1_image_button.setBounds(tank1_position_x , tank1_position_y , 60 , 430);
         tank2_image_button.setBounds(tank2_position_x , tank2_position_y , 60 , 430);
-        Cannon1_ImageButton.setBounds(cannon1_position_x + tank1_position_x, trajectoryArray[cannon1_position_x] + tank1_position_y + 156, cannon1_width , cannon1_height);
+        Cannon1_ImageButton.setBounds(cannon1_position_x + tank1_position_x, trajectoryArray[cannon1_position_x] + tank1_position_y +156, cannon1_width , cannon1_height);
         if(timeForAirdrop%400==0 && timeForAirdrop>=1 && airdrop_flag==1){
             airDropSpawnedImageFlag=0;
             airdrop_flag=0;
@@ -225,41 +225,7 @@ public class Hill implements Screen {
         }
 
         if(tankTurnFlag==1) {
-            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-                cannon1_width = 60;
-                cannon1_height = 90;
-                set_values_of_trajectory_array("tank1", tank1_angle_of_fire, tank1_velocity_of_fire);
-                if (tank1_angle_of_fire >= 1.3) {
-                    cannon1_position_x += 2;
-                } else {
-                    cannon1_position_x += 5;
-                }
-                if (trajectoryArray[cannon1_position_x] + tank1_position_y <= terrain_y_coordinate_mapping[cannon1_position_x + tank1_position_x]) {
-                    cannon1_width = 0;
-                    cannon1_height = 0;
-                    int recoil=0;
-                    recoil = tank2_position_x-cannon1_position_x;
-                    if(recoil<0){
-                        recoil=recoil*-1;
-                    }
-                    if(recoil<=40){
-                        recoil = 0 ;
-                    }
-                    else{
-                        if(tank2_position_x-cannon1_position_x < 0){
-                            recoil= -1*(tank2_position_x-cannon1_position_x);
-                        }
-                        else{
-                            recoil =tank2_position_x-cannon1_position_x;
-                        }
-                    }
-                    cannon1_position_x = tank1_position_x;
-                    System.out.println(recoil);
-                    tank2_position_x += recoil;
-                    tank2_position_y = terrain_y_coordinate_mapping[tank2_position_x];
-                    tankTurnFlag=2;
-                }
-            }
+
             if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
                 cannon1_position_x = tank1_position_x;
                 if (tank1_angle_of_fire >= 0.1) {
