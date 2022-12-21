@@ -13,6 +13,11 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+
 
 public class TankSelection implements Screen {
 
@@ -27,12 +32,55 @@ public class TankSelection implements Screen {
     static String tank_chosen_file_name ;
     private int tank_chosen_index;
     static Hill loadGame1 ;
+    TestIfEverythingIsFine x = new TestIfEverythingIsFine();
+
+    //FLYWEIGHT
+    static class Terrains{
+         String name;
+         int index;
+         Terrains one=null;
+         static HashMap<String , Terrains> x = new HashMap<>();
+
+         static Terrains getInstance(String name , int index){
+            if(!x.containsKey(name + " " + index)){
+                x.put(name+" "+index , new Terrains(name ,index));
+            }
+            return x.get(name+" "+index);
+        }
+
+        private Terrains(String name , int index){
+            this.name = name ;
+            this.index = index;
+        }
+    }
+
+    //ITERATOR
+    class testImage{
+        ArrayList x = new ArrayList();
+        void iterate(){
+            x.add(array_of_tank_images[0]);
+            x.add(array_of_tank_images[1]);
+            x.add(array_of_tank_images[2]);
+            Iterator y = x.iterator();
+            if(y.hasNext() == true){
+                for(int i = 0 ; i<10 ; i++){
+                    System.out.println(y);
+                }
+            }
+        }
+        @Override
+        public String toString(){
+            return x+" ";
+        }
+    }
 
 
     TankSelection(MyGdxGame x){
         this.object = x;
         stage_create();
     }
+
+
 
     private void stage_create(){
         stage = new Stage(new ScreenViewport());
@@ -53,6 +101,17 @@ public class TankSelection implements Screen {
         stage.addActor(right_button);
         stage.addActor(play_button);
         Gdx.input.setInputProcessor(stage);
+    }
+
+    class TestIfEverythingIsFine{
+        TestIfEverythingIsFine(){
+            testImage x = new testImage();
+            x.iterate();
+            Tank1 tankone = Tank1.getInstance();
+            tankone.equals("tank1");
+            Terrains y = Terrains.getInstance("",5);
+
+        }
     }
 
     @Override

@@ -22,18 +22,16 @@ public class Load_game_page implements Screen {
 
     private MyGdxGame object;
     private SpriteBatch batch;
-    private Texture back_button_Texture, bg;
+    private Texture back_button_Texture, bg , savedStateImage;
     private Stage stage;
     private Drawable back_button_Drawable;
     private ImageButton back_button_ImageButton;
-
-
-
 
     Load_game_page(MyGdxGame x){
         this.object = x;
         stage = new Stage(new ScreenViewport());
         bg = new Texture(Gdx.files.internal("loadGame.png"));
+        savedStateImage = new Texture(Gdx.files.internal("savedImageState.png"));
         back_button_Texture = new Texture(Gdx.files.internal("leftButton.png"));
         back_button_Drawable = new TextureRegionDrawable(new TextureRegion(back_button_Texture));
         back_button_ImageButton = new ImageButton(back_button_Drawable);
@@ -73,6 +71,7 @@ public class Load_game_page implements Screen {
         ScreenUtils.clear(1, 1, 1, 1);
         object.batch.begin();
         object.batch.draw(bg, 0, 0);
+        object.batch.draw(savedStateImage , 550 ,140);
         object.batch.end();
         stage.draw();
         back_button_ImageButton.addListener(new ClickListener(){
@@ -82,6 +81,16 @@ public class Load_game_page implements Screen {
                 object.setScreen(new Screen2(object));
             }
         });
+
+        if(Gdx.input.isKeyPressed(Input.Keys.NUM_1)){
+            object.setScreen(SavedStates.savedState1);
+        }
+        if(Gdx.input.isKeyPressed(Input.Keys.NUM_2)){
+            object.setScreen(SavedStates.savedState2);
+        }
+        if(Gdx.input.isKeyPressed(Input.Keys.NUM_3)){
+            object.setScreen(SavedStates.savedState3);
+        }
 
     }
 

@@ -28,12 +28,6 @@ public class Game implements Screen{
         batch = new SpriteBatch();
 //        img = new Texture(Gdx.files.internal(TankSelection.tank_chosen_file_name));
         img = new Texture("leftButton.png");
-
-
-
-
-
-
     }
 
 

@@ -1,9 +1,11 @@
 package com.mygdx.game;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.physics.bullet.collision._btMprSimplex_t;
@@ -15,16 +17,145 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-
+import java.awt.*;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
-//import com.badlogic.gdx.graphics.GL20;
-//import com.badlogic.gdx.graphics.g2d.Sprite;
-//import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-//import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+abstract class Tank{
+    int image_index;
+    int fuel;
+}
 
-public class Hill implements Screen {
+interface _Tank{
+    void getTankInfo(String x);
+}
+
+class TankAngle{
+    int getAngleTheta(int radian){
+        return 3*radian;
+    }
+    int getAngleRadian(int theta){
+        return (100*theta)+1;
+    }
+}
+
+class TankVelocity{
+    double getVelocityInPixelsPerSec(int velocity){
+        return (1800-(velocity*20)/400);
+    }
+}
+
+class getCoordinates{
+    int getcoordinates(String tank) {
+        if (tank.equals("tank1")) {
+            return 28;
+        }
+        else{
+            return 16;
+        }
+    }
+}
+
+class Terrain{
+    private int index_number=1;
+}
+
+//SINGLETON
+class Tank1 extends Tank implements _Tank {
+    private float health;
+    private float speed ;
+    private Texture texture;
+    private Sprite sprite;
+    private Rectangle button;
+    static private Rectangle left;
+    static private Rectangle right;
+    static private Rectangle top;
+    private static Tank1 x = null;
+
+    private Tank1() {
+    }
+
+    static Tank1 getInstance() {
+        if (x == null) {
+            return new Tank1();
+        }
+        return x;
+    }
+    @Override
+    public void getTankInfo(String tank1) {
+        System.out.println(x.image_index);
+        System.out.println(x.fuel);
+    }
+}
+
+class Tank2 extends Tank implements _Tank{
+    private static Tank2 x = null;
+    private float health;
+    private float speed ;
+    private Texture texture;
+    private Sprite sprite;
+    private Rectangle button;
+    static private Rectangle left;
+    static private Rectangle right;
+    static private Rectangle top;
+    private Tank2(){}
+    static Tank2 getInstance(){
+        if(x==null){
+            return new Tank2();
+        }
+        return x;
+    }
+    @Override
+    public void getTankInfo(String tank2) {
+        System.out.println(x.image_index);
+        System.out.println(x.fuel);
+    }
+}
+
+class Tank3 extends Tank implements _Tank{
+    private static Tank3 x = null;
+    private float health;
+    private float speed ;
+    private Texture texture;
+    private Sprite sprite;
+    private Rectangle button;
+    static private Rectangle left;
+    static private Rectangle right;
+    static private Rectangle top;
+    private Tank3(){}
+    static Tank3 getInstance(){
+        if(x==null){
+            return new Tank3();
+        }
+        return x;
+    }
+    @Override
+    public void getTankInfo(String tank3) {
+        System.out.println(x.image_index);
+        System.out.println(x.fuel);
+    }
+}
+
+class SavedStates{
+    static Hill savedState1;
+    static Hill savedState2;
+    static Hill savedState3;
+    static void setSavedState(Hill x , int num){
+        if(num==1) {
+            savedState1 = x;
+        }
+        if(num==2) {
+            savedState2 = x;
+        }
+        if(num==3) {
+            savedState3 = x;
+        }
+    }
+}
+
+
+public class Hill implements Screen , Serializable {
     private MyGdxGame object;
     private SpriteBatch batch;
     private Texture img, bg;
@@ -39,7 +170,7 @@ public class Hill implements Screen {
     private int tank2_position_x= 1100 , tank2_position_y =-94;
     private TextureRegionDrawable tank1_drawable;
     private ImageButton tank1_image_button;
-    private int [] terrain_y_coordinate_mapping = new int[1500];
+    private int [] terrain_y_coordinate_mapping = new int[3000];
     private TextureRegionDrawable tank2_drawable;
     private ImageButton tank2_image_button;
     private int airdrop_flag=1;
@@ -47,19 +178,31 @@ public class Hill implements Screen {
     private Texture airdropImage;
     private Texture airDropSpawnedImage;
     private int airDropSpawnedImageFlag=1 , airDropSpawnedImageTime=1;
-    private int trajectoryArray[] = new int[1500];
-    private Texture Cannon1;
-    private Drawable Cannon1_drawable;
-    private ImageButton Cannon1_ImageButton;
+    private int trajectoryArray[] = new int[3000];
+    private Texture Cannon1, Cannon2;
+    private Drawable Cannon1_drawable , Cannon2_drawable;
+    private ImageButton Cannon1_ImageButton, Cannon2_ImageButton;
     private int cannon1_position_x;
     private int cannon1_width , cannon1_height;
     private double tank1_angle_of_fire=0.9 , tank1_velocity_of_fire=100;
+    private int cannon2_position_x;
+    private int cannon2_width , cannon2_height;
+    private double tank2_angle_of_fire=0.9 , tank2_velocity_of_fire=100;
     private int tankTurnFlag=1;
     private Texture player1turn , player2turn ;
+    int health_tank1=100 , health_tank2=100;
+    private Texture full_health_image , two_third_health_image ,  one_third_health_image , player1_has_won_image , critically_low_health_image , player2_has_won_image;
+    private Tank1 tankone = Tank1.getInstance();
+    private int serialisationTankExistenceFlag = 1 ;
+    final private int tankWidth = 60 ;
+    final private int tankHeight = 430;
+    private int savedGameNumber=0;
 
+    //attributes
+    TankVelocity p = new TankVelocity();
+    getCoordinates m = new getCoordinates();
 
-
-    Hill(MyGdxGame x) {
+    void setAttributes(MyGdxGame x){
         this.object = x;
         stage = new Stage(new ScreenViewport());
         bg = new Texture(Gdx.files.internal("terrain.png"));
@@ -78,6 +221,12 @@ public class Hill implements Screen {
         Cannon1_ImageButton.setBounds(tank1_position_x , terrain_y_coordinate_mapping[tank1_position_x], 0 , 0);
         cannon1_position_x=0;
         stage.addActor(Cannon1_ImageButton);
+        Cannon2 = new Texture("missile.png");
+        Cannon2_drawable =  new TextureRegionDrawable(new TextureRegion(Cannon2));
+        Cannon2_ImageButton = new ImageButton(Cannon2_drawable);
+        Cannon2_ImageButton.setBounds(tank2_position_x , terrain_y_coordinate_mapping[tank2_position_x], 0 , 0);
+        cannon2_position_x=0;
+        stage.addActor(Cannon2_ImageButton);
         stage.addActor(tank1_image_button);
         Gdx.input.setInputProcessor(stage);
 
@@ -115,13 +264,25 @@ public class Hill implements Screen {
 
         player1turn = new Texture(Gdx.files.internal("player1turn.png"));
         player2turn = new Texture(Gdx.files.internal("player2turn.png"));
-        Gdx.input.setInputProcessor(stage);
+        full_health_image = new Texture(Gdx.files.internal("fullhealth.png"));
+        two_third_health_image = new Texture(Gdx.files.internal("twothirdhealth.png"));
+        one_third_health_image = new Texture(Gdx.files.internal("onethirdhealth.png"));
+        player1_has_won_image= new Texture(Gdx.files.internal("player1_Winner.png"));
+        player2_has_won_image= new Texture(Gdx.files.internal("player2_Winner.png"));
+        critically_low_health_image= new Texture(Gdx.files.internal("criticallylowhealthimage.png"));
 
+        //attributes
+        p.getVelocityInPixelsPerSec(5);
+        m.getcoordinates("tank2");
+    }
+
+    Hill(MyGdxGame x) {
+        setAttributes(x);
 
     }
 
     private void set_values_of_trajectory_array(String tankFiredFrom , double angle , double velocity){
-        for(int i = 0 ; i<1500 ; i++){
+        for(int i = 0 ; i<3000 ; i++){
             trajectoryArray[i] = ((int) ((i * Math.tan(angle)) - ((0.5 * 10 * i * i) / ((velocity * velocity * Math.cos(angle) * Math.cos(angle))))));
         }
 //        else if(tankFiredFrom.equals("tank2")) {
@@ -132,7 +293,7 @@ public class Hill implements Screen {
 
     }
     private void set_values_of_terrain_y_coordinate_mapping(){
-        for(int i = 0 ; i<1500 ; i++){
+        for(int i = 0 ; i<3000; i++){
            terrain_y_coordinate_mapping[i] = (int)Math.sqrt((2112*2112) - ((i-555)*(i-555))) - 2136 ;
         }
     }
@@ -167,9 +328,10 @@ public class Hill implements Screen {
         ScreenUtils.clear(1, 1, 1, 1);
         object.batch.begin();
         object.batch.draw(bg, 0, 0);
-        tank1_image_button.setBounds(tank1_position_x , tank1_position_y , 60 , 430);
-        tank2_image_button.setBounds(tank2_position_x , tank2_position_y , 60 , 430);
-        Cannon1_ImageButton.setBounds(cannon1_position_x + tank1_position_x, trajectoryArray[cannon1_position_x] + tank1_position_y +156, cannon1_width , cannon1_height);
+        tank1_image_button.setBounds(tank1_position_x , tank1_position_y , tankWidth , tankHeight);
+        tank2_image_button.setBounds(tank2_position_x , tank2_position_y , tankWidth , tankHeight);
+        Cannon1_ImageButton.setBounds(cannon1_position_x + tank1_position_x, trajectoryArray[cannon1_position_x] + tank1_position_y + 156, cannon1_width , cannon1_height);
+        Cannon2_ImageButton.setBounds( 2*tank2_position_x- (cannon2_position_x + tank2_position_x), trajectoryArray[cannon2_position_x] + tank2_position_y + 156, cannon2_width , cannon2_height);
         if(timeForAirdrop%400==0 && timeForAirdrop>=1 && airdrop_flag==1){
             airDropSpawnedImageFlag=0;
             airdrop_flag=0;
@@ -188,20 +350,20 @@ public class Hill implements Screen {
             object.batch.draw(airDropSpawnedImage, 270, 60);
             airDropSpawnedImageTime+=2;
         }
-        if(airdrop_flag==0 && (tank1_position_y==terrain_y_coordinate_mapping[500] || tank2_position_y==terrain_y_coordinate_mapping[500])){
-            airdrop_flag=1;
+        if(airdrop_flag==0 && (tank1_position_y==terrain_y_coordinate_mapping[500])){
+            health_tank2=-1;
         }
+        if(airdrop_flag==0 && tank2_position_y==terrain_y_coordinate_mapping[500]){
+            health_tank1=-1;
+        }
+
         if(tankTurnFlag==1){
             object.batch.draw(player1turn , 495 , 420);
         }
         if(tankTurnFlag==2){
             object.batch.draw(player2turn , 495 , 420);
         }
-
-
-
-
-        if(tankTurnFlag==2) {
+        if(tankTurnFlag==2){
             if (Gdx.input.isKeyPressed(Input.Keys.D)) {
                 tank2_position_x = tank2_position_x + 1;
                 if (tank2_position_x > 1100) {
@@ -222,23 +384,134 @@ public class Hill implements Screen {
             if (Gdx.input.isKeyPressed(Input.Keys.X)) {
                 tankTurnFlag=1;
             }
+            if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
+                cannon2_width = 60;
+                cannon2_height = 90;
+                set_values_of_trajectory_array("tank1", tank2_angle_of_fire, tank2_velocity_of_fire);
+                cannon2_position_x += 20;
+            if (trajectoryArray[cannon2_position_x] + tank2_position_y <= terrain_y_coordinate_mapping[cannon2_position_x + tank2_position_x]) {
+                    cannon2_width = 0;
+                    cannon2_height = 0;
+                    double recoil=0;
+                    recoil = tank1_position_x-cannon2_position_x;
+                    if(recoil>=100|| recoil<=-100) {
+                        recoil = 0;
+                    }
+                    cannon2_position_x = tank2_position_x;
+                    System.out.println("RECOIL: "+recoil);
+                    if(recoil<0){
+                        recoil=-1*recoil;
+                    }
+                    if(recoil !=0) {
+                        health_tank1 -= 10;
+                    }
+                    if(recoil >= 40){
+                        health_tank1 -= 20;
+                    }
+                    System.out.println(health_tank1);
+                    tank1_position_x +=recoil/9;
+                    tank1_position_y = terrain_y_coordinate_mapping[tank1_position_x];
+                    tankTurnFlag=1;
+                }
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
+                if(tank2_velocity_of_fire<=100) {
+                    tank2_velocity_of_fire += 1;
+                }
+                System.out.println(tank2_velocity_of_fire);
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.E)) {
+                if(tank2_velocity_of_fire>=1) {
+                    tank2_velocity_of_fire -= 1;
+                }
+                System.out.println(tank2_velocity_of_fire);
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+                cannon2_position_x = tank2_position_x;
+                if (tank2_angle_of_fire >= 0.1) {
+                    tank2_angle_of_fire -= 0.1;
+                    System.out.println(tank2_angle_of_fire);
+                }
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.S)) {
+                cannon2_position_x = tank1_position_x;
+                if (tank2_angle_of_fire <= 1.5) {
+                    tank1_angle_of_fire += 0.1;
+                    System.out.println(tank2_angle_of_fire);
+                }
+            }
+            if(serialisationTankExistenceFlag==0){
+//                tank1_image_button.setBounds(tank1_position_x , tank1_position_y , 60 , 90);
+
+            }
         }
-
+        //CONTROLS
         if(tankTurnFlag==1) {
-
+            if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+                cannon1_width = 60;
+                cannon1_height = 90;
+                set_values_of_trajectory_array("tank1", tank1_angle_of_fire, tank1_velocity_of_fire);
+                if(tank1_angle_of_fire>=1.2) {
+                    cannon1_position_x += 5;
+                }
+                else{
+                    cannon1_position_x+=20;
+                }
+                if (trajectoryArray[cannon1_position_x] + tank1_position_y <= terrain_y_coordinate_mapping[cannon1_position_x + tank1_position_x]) {
+                    cannon1_width = 0;
+                    cannon1_height = 0;
+                    double recoil=0;
+                    recoil = tank2_position_x-cannon1_position_x;
+                    if(recoil>=100|| recoil<=-100) {
+                        recoil = 0;
+                    }
+                    cannon1_position_x = tank1_position_x;
+                    System.out.println("RECOIL: "+recoil);
+                    if(recoil<0){
+                        recoil=-1*recoil;
+                    }
+                    if(recoil !=0) {
+                        health_tank2 -= 10;
+                    }
+                    if(recoil >= 40){
+                        health_tank2 -= 20;
+                    }
+                    System.out.println(health_tank2);
+                    if(recoil<=0){
+                        tank2_position_x -=recoil/5;
+                    }
+                    else {
+                        tank2_position_x += recoil / 2;
+                    }
+                    tank2_position_y = terrain_y_coordinate_mapping[tank2_position_x];
+                    tankTurnFlag=2;
+                }
+            }
             if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
                 cannon1_position_x = tank1_position_x;
                 if (tank1_angle_of_fire >= 0.1) {
-                    tank1_angle_of_fire -= 0.02;
+                    tank1_angle_of_fire -= 0.1;
                     System.out.println(tank1_angle_of_fire);
                 }
             }
             if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
                 cannon1_position_x = tank1_position_x;
                 if (tank1_angle_of_fire <= 1.5) {
-                    tank1_angle_of_fire += 0.02;
+                    tank1_angle_of_fire += 0.1;
                     System.out.println(tank1_angle_of_fire);
                 }
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.P)) {
+                if(tank1_velocity_of_fire<=100) {
+                    tank1_velocity_of_fire += 1;
+                }
+                System.out.println(tank1_velocity_of_fire);
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.O)) {
+                if(tank1_velocity_of_fire>=1) {
+                    tank1_velocity_of_fire -= 1;
+                }
+                System.out.println(tank1_velocity_of_fire);
             }
 
             if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
@@ -260,18 +533,107 @@ public class Hill implements Screen {
             }
         }
 
+        if(Gdx.input.isKeyPressed(Input.Keys.NUM_1)){
+            try {
+                FileOutputStream fo = new FileOutputStream("/Users/utkarsh/Desktop/serialisationFolder/savedstate1.txt");
+                ObjectOutputStream out = new ObjectOutputStream(fo);
+                out.writeObject(TankSelection.loadGame1);
+                out.close();
+                fo.close();
+                System.out.println("Successfully saved!");
+                menu_page_show_flag = 0;
+            }
+            catch (Exception e){
 
+            }
+            finally{
+                SavedStates.setSavedState(this , 1);
+                serialisationTankExistenceFlag=0;
+                setAttributes(object);
+            }
+        }
+        if(Gdx.input.isKeyPressed(Input.Keys.NUM_2)){
+            try {
+                FileOutputStream fo = new FileOutputStream("/Users/utkarsh/Desktop/serialisationFolder/savedstate2.txt");
+                ObjectOutputStream out = new ObjectOutputStream(fo);
+                out.writeObject(TankSelection.loadGame1);
+                out.close();
+                fo.close();
+                System.out.println("Successfully saved!");
+                menu_page_show_flag = 0;
+            }
+            catch (Exception e){
 
+            }
+            finally{
+                SavedStates.setSavedState(this, 2);
+                serialisationTankExistenceFlag=0;
+                setAttributes(object);
+            }
+        }
+        if(Gdx.input.isKeyPressed(Input.Keys.NUM_3)){
+            try {
+                FileOutputStream fo = new FileOutputStream("/Users/utkarsh/Desktop/serialisationFolder/savedstate3.txt");
+                ObjectOutputStream out = new ObjectOutputStream(fo);
+                out.writeObject(TankSelection.loadGame1);
+                out.close();
+                fo.close();
+                System.out.println("Successfully saved!");
+                menu_page_show_flag = 0;
+            }
+            catch (Exception e){
 
+            }
+            finally{
+                SavedStates.setSavedState(this , 3);
+                serialisationTankExistenceFlag=0;
+                setAttributes(object);
+            }
+        }
+        //HEALTH
 
-
-
+        if(health_tank1>90 && health_tank1<=100){
+            object.batch.draw(full_health_image , 0 , 0);
+        }
+        else if(health_tank1>60 && health_tank1<=90){
+            object.batch.draw(two_third_health_image , 0, 0);
+        }
+        else if(health_tank1>30 && health_tank1<=60){
+            object.batch.draw(one_third_health_image , 0, 0);
+        }
+        else if(health_tank1>0 && health_tank1<=30){
+            object.batch.draw(critically_low_health_image , 0, 0);
+        }
+        else if(health_tank1<=0){
+            ScreenUtils.clear(0, 0, 0 , 0);
+            tank1_image_button.setBounds(tank1_position_x , tank1_position_y , 0, 0);
+            tank2_image_button.setBounds(tank2_position_x , tank2_position_y , 0 , 0);
+            object.batch.draw(player2_has_won_image , 50 , 0);
+        }
+        if(health_tank2>90 && health_tank2<=100){
+            object.batch.draw(full_health_image , 1015 , 0);
+        }
+        else if(health_tank2>60 && health_tank2<=90){
+            object.batch.draw(two_third_health_image , 1015, 0);
+        }
+        else if(health_tank2>30 && health_tank2<=60){
+            object.batch.draw(one_third_health_image , 1015, 0);
+        }
+        else if(health_tank2>0 && health_tank2<=30){
+            object.batch.draw(critically_low_health_image , 1015, 0);
+        }
+        else if(health_tank2<=0){
+            ScreenUtils.clear(0, 0, 0 , 0);
+            tank1_image_button.setBounds(tank1_position_x , tank1_position_y , 0, 0);
+            tank2_image_button.setBounds(tank2_position_x , tank2_position_y , 0 , 0);
+            object.batch.draw(player1_has_won_image , 50 , 0);
+        }
+        //MENU
         if (menu_page_show_flag == 1) {
             resumeButton_ImageButton.setBounds(50, 290, 1000, 300);
             In_game_save_state_button_ImageButton.setBounds(50, 150, 1000, 300);
             In_game_back_to_main_menu_ImageButton.setBounds(50, 10, 1000, 300);
             Ingame_menu_button_ImageButton.setBounds(0, 0, 0, 0);
-
         } else {
             resumeButton_ImageButton.setBounds(0, 0, 0, 0);
             In_game_save_state_button_ImageButton.setBounds(0, 0, 0, 0);
@@ -297,18 +659,17 @@ public class Hill implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y){
                 try {
-                    FileOutputStream fo = new FileOutputStream("/home/manav/Desktop/savestate.txt");
+                    FileOutputStream fo = new FileOutputStream("/Users/utkarsh/Desktop/serialisationFolder/savedstate1.txt");
                     ObjectOutputStream out = new ObjectOutputStream(fo);
                     out.writeObject(TankSelection.loadGame1);
                     out.close();
                     fo.close();
-                }
-                catch (Exception e){
-                    System.out.println("Exception");
-                }
-                finally{
                     System.out.println("Successfully saved!");
                     menu_page_show_flag = 0;
+                }
+                catch (Exception e){}
+                finally{
+
                 }
             }
         });

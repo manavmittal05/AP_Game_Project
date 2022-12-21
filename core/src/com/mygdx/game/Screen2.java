@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+import java.util.Iterator;
 
 public class Screen2 implements Screen {
 
@@ -79,7 +80,7 @@ public class Screen2 implements Screen {
     }
 
     @Override
-    public void render (float delta) {
+    public void render (final float delta) {
         ScreenUtils.clear(1, 1, 1, 1);
         object.batch.begin();
         object.batch.draw(bg, 0, 0);
@@ -107,7 +108,8 @@ public class Screen2 implements Screen {
                 button_image1.dispose();
                 button_image2.dispose();
                 button_image3.dispose();
-                stage.dispose();
+//                stage.dispose();
+
                 object.setScreen(new Load_game_page(object));
             }
         });

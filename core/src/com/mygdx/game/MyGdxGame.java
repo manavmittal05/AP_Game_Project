@@ -6,6 +6,8 @@ import com.badlogic.gdx.Game;
 //import com.badlogic.gdx.InputProcessor;
 //import com.badlogic.gdx.graphics.Texture;
 //import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 //import com.badlogic.gdx.graphics.g2d.TextureRegion;
 //import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -22,11 +24,19 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class MyGdxGame extends Game {
 	SpriteBatch batch;
+	private Music backgroundMusic;
+
 
 	@Override
 	public void create () {
 		batch = new SpriteBatch();
 		setScreen(new Screen1(this));
+		Music music=Gdx.audio.newMusic(Gdx.files.internal("backgroundsound1.mp3"));
+		music.play();
+		music.setVolume(0.1f);
+		music.setLooping(true);
+
+
 	}
 	@Override
 	public void render () {
